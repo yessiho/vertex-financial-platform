@@ -8,6 +8,7 @@ interface AuthUser {
   entity_id: string;
   role: string;
   mfa_verified: boolean;
+  exp: number;
 }
 
 interface AuthContextType {

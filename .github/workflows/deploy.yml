@@ -1,17 +1,16 @@
-name: Deploy to Production
+name: Deploy
 
 on:
   push:
     branches: [main]
-    tags:
-      - 'v*'
+
+env:
+  NEXT_TELEMETRY_DISABLED: 1
 
 jobs:
-  deploy:
-    name: Deploy
+  build-and-deploy:
+    name: Build & Deploy
     runs-on: ubuntu-latest
-    environment: production
-    if: github.ref == 'refs/heads/main'
 
     steps:
       - uses: actions/checkout@v4
@@ -26,25 +25,32 @@ jobs:
         with:
           version: 10.33.4
 
+      - name: Cache pnpm store
+        uses: actions/cache@v4
+        with:
+          path: ~/.local/share/pnpm/store
+          key: ${{ runner.os }}-pnpm-${{ hashFiles('**/pnpm-lock.yaml') }}
+          restore-keys: ${{ runner.os }}-pnpm-
+
       - name: Install dependencies
         run: pnpm install
 
-      - name: Build all apps
-        run: pnpm build
+      - name: Build web portal
+        run: pnpm --filter web-portal build
         env:
-          DATABASE_URL: ${{ secrets.DATABASE_URL }}
-          JWT_SECRET: ${{ secrets.JWT_SECRET }}
-          NEXT_PUBLIC_API_URL: ${{ secrets.NEXT_PUBLIC_API_URL }}
+          NEXT_PUBLIC_API_URL: ${{ secrets.NEXT_PUBLIC_API_URL || 'http://localhost:4000' }}
+          NEXT_TELEMETRY_DISABLED: 1
 
-      - name: Deploy API
-        run: echo "Deploy step — configure with your cloud provider (Railway, Render, AWS, etc)"
-        # Replace with your actual deploy command e.g.:
-        # run: railway deploy --service mobile-api
+      - name: Build admin dashboard
+        run: pnpm --filter admin-dashboard build
+        env:
+          NEXT_PUBLIC_API_URL: ${{ secrets.NEXT_PUBLIC_API_URL || 'http://localhost:4000' }}
+          NEXT_TELEMETRY_DISABLED: 1
 
-      - name: Deploy Web Portal
-        run: echo "Deploy web portal — configure with Vercel/Netlify"
-        # run: vercel deploy apps/web-portal --prod --token ${{ secrets.VERCEL_TOKEN }}
-
-      - name: Deploy Admin Dashboard
-        run: echo "Deploy admin dashboard"
-        # run: vercel deploy apps/admin-dashboard --prod --token ${{ secrets.VERCEL_TOKEN }}
+      - name: Deploy
+        run: |
+          echo "✅ Build successful"
+          echo "Configure deployment target in this step:"
+          echo "  - Railway: railway deploy"
+          echo "  - Vercel: vercel deploy --prod"
+          echo "  - AWS: eb deploy"
