@@ -1,0 +1,7 @@
+{
+  "name": "@vertex/messaging",
+  "version": "1.0.0",
+  "private": true,
+  "main": "src/index.ts",
+  "dependencies": { "@sendgrid/mail": "^8.1.3" }
+}

@@ -1,0 +1,37 @@
+version: '3.9'
+services:
+  db:
+    image: postgres:16-alpine
+    container_name: vertex_db
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: vertex_db
+      POSTGRES_USER: vertex_user
+      POSTGRES_PASSWORD: vertex_local_password
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U vertex_user -d vertex_db"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  redis:
+    image: redis:7-alpine
+    container_name: vertex_redis
+    restart: unless-stopped
+    command: redis-server --appendonly yes
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+
+volumes:
+  postgres_data:
+  redis_data:
+
+networks:
+  default:
+    name: vertex_network

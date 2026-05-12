@@ -1,0 +1,21 @@
+node_modules/
+dist/
+.next/
+build/
+.env
+.env.local
+*.env
+logs/
+*.log
+.DS_Store
+coverage/
+*.pem
+*.key
+
+# Additional ignores
+.env
+apps/mobile-api/.env
+packages/database/.env
+apps/web-portal/.env.local
+apps/admin-dashboard/.env.local
+pnpm-lock.yaml

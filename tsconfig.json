@@ -1,0 +1,24 @@
+{
+  "compilerOptions": {
+    "target": "ES2022",
+    "module": "commonjs",
+    "moduleResolution": "node",
+    "lib": ["ES2022"],
+    "strict": true,
+    "esModuleInterop": true,
+    "skipLibCheck": true,
+    "forceConsistentCasingInFileNames": true,
+    "resolveJsonModule": true,
+    "declaration": true,
+    "sourceMap": true,
+    "baseUrl": ".",
+    "paths": {
+      "@vertex/shared-types": ["./packages/shared-types/src/index.ts"],
+      "@vertex/database":     ["./packages/database/src/index.ts"],
+      "@vertex/auth":         ["./packages/auth/src/index.ts"],
+      "@vertex/box-sdk":      ["./packages/box-sdk/src/index.ts"],
+      "@vertex/messaging":    ["./packages/messaging/src/index.ts"]
+    }
+  },
+  "exclude": ["node_modules", "dist", "**/*.test.ts"]
+}

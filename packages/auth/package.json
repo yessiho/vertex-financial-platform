@@ -1,0 +1,11 @@
+{
+  "name": "@vertex/auth",
+  "version": "1.0.0",
+  "private": true,
+  "main": "src/index.ts",
+  "dependencies": {
+    "jsonwebtoken": "^9.0.2",
+    "bcryptjs": "^2.4.3",
+    "speakeasy": "^2.0.0"
+  }
+}

@@ -1,0 +1,24 @@
+{
+  "name": "@vertex/database",
+  "version": "1.0.0",
+  "private": true,
+  "main": "src/index.ts",
+  "scripts": {
+    "migrate": "tsx src/migrate.ts latest",
+    "migrate:rollback": "tsx src/migrate.ts rollback",
+    "seed": "tsx src/migrate.ts seed",
+    "reset": "pnpm migrate:rollback && pnpm migrate && pnpm seed"
+  },
+  "dependencies": {
+    "bcryptjs": "^2.4.3",
+    "dotenv": "^16.4.5",
+    "knex": "^3.1.0",
+    "pg": "^8.11.5"
+  },
+  "devDependencies": {
+    "@types/bcryptjs": "^2.4.6",
+    "@types/pg": "^8.11.5",
+    "tsx": "^4.7.2",
+    "typescript": "^5.4.0"
+  }
+}

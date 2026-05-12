@@ -1,0 +1,23 @@
+{
+  "name": "vertex-financial-platform",
+  "version": "1.0.0",
+  "private": true,
+  "packageManager": "pnpm@10.33.4",
+  "workspaces": ["apps/*", "packages/*"],
+  "scripts": {
+    "dev:api":    "pnpm --filter mobile-api run dev",
+    "dev:web":    "pnpm --filter web-portal run dev",
+    "dev:admin":  "pnpm --filter admin-dashboard run dev",
+    "build":      "pnpm --recursive run build",
+    "test":       "pnpm --recursive run test",
+    "db:migrate": "pnpm --filter @vertex/database run migrate",
+    "db:seed":    "pnpm --filter @vertex/database run seed",
+    "db:reset":   "pnpm --filter @vertex/database run reset"
+  },
+  "devDependencies": {
+    "typescript": "^5.4.0",
+    "prettier": "^3.2.0",
+    "eslint": "^8.57.0"
+  },
+  "engines": { "node": ">=20.0.0", "pnpm": ">=9.0.0" }
+}
