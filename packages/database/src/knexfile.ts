@@ -2,13 +2,15 @@ import 'dotenv/config';
 import type { Knex } from 'knex';
 import path from 'path';
 
+const isRender = process.env.DATABASE_URL?.includes('render.com');
+
 const config: Knex.Config = {
   client: 'pg',
   connection: {
     connectionString: process.env.DATABASE_URL,
-    ssl: {
-      rejectUnauthorized: false,
-    },
+    ssl: isRender
+      ? { rejectUnauthorized: false }
+      : false,
   },
   pool: { min: 2, max: 10 },
   migrations: {
