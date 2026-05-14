@@ -25,6 +25,8 @@ app.use(cors({
     'http://10.255.255.254:3000',
     'http://10.255.255.254:3001',
     'http://10.255.255.254:3002',
+    'https://vertex-web-portal.vercel.app',
+    'https://admin-dashboard-pied-two-37.vercel.app',
   ],
   credentials: true,
 }));
