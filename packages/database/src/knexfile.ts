@@ -4,7 +4,12 @@ import path from 'path';
 
 const config: Knex.Config = {
   client: 'pg',
-  connection: process.env.DATABASE_URL,
+  connection: {
+    connectionString: process.env.DATABASE_URL,
+    ssl: {
+      rejectUnauthorized: false,
+    },
+  },
   pool: { min: 2, max: 10 },
   migrations: {
     directory: path.join(__dirname, '../migrations'),
