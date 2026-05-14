@@ -1,0 +1,26 @@
+services:
+  - type: web
+    name: vertex-api
+    runtime: node
+    rootDir: .
+    buildCommand: "npx pnpm@10.33.4 install && npx pnpm@10.33.4 --filter mobile-api build"
+    startCommand: "node apps/mobile-api/dist/index.js"
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: PORT
+        value: 4000
+      - key: JWT_SECRET
+        sync: false
+      - key: DATABASE_URL
+        sync: false
+      - key: REDIS_URL
+        sync: false
+      - key: SENDGRID_API_KEY
+        sync: false
+      - key: EMAIL_FROM
+        sync: false
+      - key: WEB_PORTAL_URL
+        sync: false
+      - key: ADMIN_DASHBOARD_URL
+        sync: false

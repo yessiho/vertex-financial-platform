@@ -38,19 +38,33 @@ jobs:
       - name: Build web portal
         run: pnpm --filter web-portal build
         env:
-          NEXT_PUBLIC_API_URL: ${{ secrets.NEXT_PUBLIC_API_URL || 'http://localhost:4000' }}
-          NEXT_TELEMETRY_DISABLED: 1
+          NEXT_PUBLIC_API_URL: ${{ secrets.NEXT_PUBLIC_API_URL }}
 
       - name: Build admin dashboard
         run: pnpm --filter admin-dashboard build
         env:
-          NEXT_PUBLIC_API_URL: ${{ secrets.NEXT_PUBLIC_API_URL || 'http://localhost:4000' }}
-          NEXT_TELEMETRY_DISABLED: 1
+          NEXT_PUBLIC_API_URL: ${{ secrets.NEXT_PUBLIC_API_URL }}
 
-      - name: Deploy
+      - name: Deploy web portal to Vercel
+        if: env.VERCEL_TOKEN != ''
         run: |
-          echo "✅ Build successful"
-          echo "Configure deployment target in this step:"
-          echo "  - Railway: railway deploy"
-          echo "  - Vercel: vercel deploy --prod"
-          echo "  - AWS: eb deploy"
+          npm install -g vercel
+          cd apps/web-portal
+          vercel deploy --prod --token ${{ secrets.VERCEL_TOKEN }} --yes
+        env:
+          VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
+          VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
+          VERCEL_PROJECT_ID: ${{ secrets.VERCEL_WEB_PROJECT_ID }}
+
+      - name: Deploy admin dashboard to Vercel
+        if: env.VERCEL_TOKEN != ''
+        run: |
+          cd apps/admin-dashboard
+          vercel deploy --prod --token ${{ secrets.VERCEL_TOKEN }} --yes
+        env:
+          VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
+          VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
+          VERCEL_PROJECT_ID: ${{ secrets.VERCEL_ADMIN_PROJECT_ID }}
+
+      - name: Summary
+        run: echo "Build and deploy complete"
