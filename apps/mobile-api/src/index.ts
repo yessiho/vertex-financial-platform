@@ -11,6 +11,9 @@ import { redirectsRouter } from './routes/redirects';
 import { usersRouter } from './routes/users';
 import { messagesRouter } from './routes/messages';
 import { documentsRouter } from './routes/documents';
+import { mobileRouter } from './routes/mobile';
+import { auditRouter } from './routes/audit';
+import { teamsRouter } from './routes/teams';
 import { errorHandler } from './middleware/errorHandler';
 
 const app = express();
@@ -54,6 +57,9 @@ app.use('/api/v1/redirects', redirectsRouter);
 app.use('/api/v1/users',     usersRouter);
 app.use('/api/v1/messages',  messagesRouter);
 app.use('/api/v1/documents', documentsRouter);
+app.use('/api/v1/mobile', mobileRouter);
+app.use('/api/v1/audit', auditRouter);
+app.use('/api/v1/teams', teamsRouter);
 
 app.use((_req, res) => res.status(404).json({ error: 'Route not found' }));
 app.use(errorHandler);

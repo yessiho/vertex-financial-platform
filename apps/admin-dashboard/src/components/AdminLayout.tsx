@@ -9,6 +9,8 @@ const NAV = [
   { label: 'Entities',   href: '/dashboard/entities' },
   { label: 'Redirects',  href: '/dashboard/redirects' },
   { label: 'Users',      href: '/dashboard/users' },
+  { label: 'Audit Log',   href: '/dashboard/audit' },
+  { label: 'Teams',        href: '/dashboard/teams' },
 ];
 
 export default function AdminLayout({ children }: { children: React.ReactNode }) {
