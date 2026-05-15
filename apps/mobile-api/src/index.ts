@@ -14,6 +14,7 @@ import { documentsRouter } from './routes/documents';
 import { errorHandler } from './middleware/errorHandler';
 
 const app = express();
+app.set('trust proxy', 1); // Required for Render/Railway/Heroku
 const PORT = process.env.PORT || 4000;
 
 app.use(helmet());
