@@ -2,8 +2,7 @@ import 'dotenv/config';
 import type { Knex } from 'knex';
 import path from 'path';
 
-const isProduction = process.env.DATABASE_URL?.includes('render.com') ||
-                     process.env.NODE_ENV === 'production';
+const isProduction = !!(process.env.DATABASE_URL && process.env.DATABASE_URL.includes('render.com'));
 
 const config: Knex.Config = {
   client: 'pg',
