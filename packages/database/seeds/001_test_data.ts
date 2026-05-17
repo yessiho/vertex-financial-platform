@@ -101,6 +101,45 @@ export async function seed(knex: Knex): Promise<void> {
     updated_by: user.id,
   });
 
+  // Acme Corporation redirects
+  await knex('portal_redirects').insert([
+    {
+      entity_id: entity2.id,
+      portal_type: 'payroll',
+      label: 'ADP Payroll',
+      target_url: 'https://workforcenow.adp.com',
+      is_active: true, version: 1, updated_by: user.id,
+    },
+    {
+      entity_id: entity2.id,
+      portal_type: 'payment',
+      label: 'Stripe Dashboard',
+      target_url: 'https://dashboard.stripe.com',
+      is_active: true, version: 1, updated_by: user.id,
+    },
+    {
+      entity_id: entity2.id,
+      portal_type: 'tax',
+      label: 'Tax Portal',
+      target_url: 'https://www.irs.gov',
+      is_active: true, version: 1, updated_by: user.id,
+    },
+    {
+      entity_id: entity1.id,
+      portal_type: 'payment',
+      label: 'Stripe Dashboard',
+      target_url: 'https://dashboard.stripe.com',
+      is_active: true, version: 1, updated_by: user.id,
+    },
+    {
+      entity_id: entity1.id,
+      portal_type: 'tax',
+      label: 'Tax Portal',
+      target_url: 'https://www.irs.gov',
+      is_active: true, version: 1, updated_by: user.id,
+    },
+  ]);
+
   console.log('Seed complete');
   console.log('   Email:    admin@vertex.local');
   console.log('   Password: Admin1234!');
