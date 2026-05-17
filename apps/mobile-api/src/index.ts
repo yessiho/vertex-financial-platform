@@ -13,6 +13,7 @@ import { messagesRouter } from './routes/messages';
 import { documentsRouter } from './routes/documents';
 import { mobileRouter } from './routes/mobile';
 import { auditRouter } from './routes/audit';
+import { statsRouter } from './routes/stats';
 import { teamsRouter } from './routes/teams';
 import { errorHandler } from './middleware/errorHandler';
 
@@ -60,6 +61,7 @@ app.use('/api/v1/documents', documentsRouter);
 app.use('/api/v1/mobile', mobileRouter);
 app.use('/api/v1/audit', auditRouter);
 app.use('/api/v1/teams', teamsRouter);
+app.use('/api/v1/stats', statsRouter);
 
 app.use((_req, res) => res.status(404).json({ error: 'Route not found' }));
 app.use(errorHandler);

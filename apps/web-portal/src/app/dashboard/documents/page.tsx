@@ -7,13 +7,9 @@ const CATEGORIES = ['all','invoice','tax_filing','payroll','bank_statement','rep
 const API = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000';
 
 interface Doc {
-  id: string;
-  name: string;
-  category: string;
-  mime_type: string;
-  size_bytes: number;
-  uploaded_by_name: string;
-  created_at: string;
+  id: string; name: string; category: string;
+  mime_type: string; size_bytes: number;
+  uploaded_by_name: string; created_at: string;
 }
 
 function formatBytes(bytes: number) {
@@ -40,8 +36,10 @@ export default function DocumentsPage() {
   const { user, isLoading, token } = useAuth();
   const router = useRouter();
   const [docs, setDocs] = useState<Doc[]>([]);
+  const [filtered, setFiltered] = useState<Doc[]>([]);
   const [loading, setLoading] = useState(true);
   const [activeCategory, setActiveCategory] = useState('all');
+  const [search, setSearch] = useState('');
   const [uploading, setUploading] = useState(false);
   const [uploadCategory, setUploadCategory] = useState('other');
   const [error, setError] = useState('');
@@ -49,6 +47,7 @@ export default function DocumentsPage() {
   const [showUpload, setShowUpload] = useState(false);
   const [dragOver, setDragOver] = useState(false);
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
+  const [downloading, setDownloading] = useState<string | null>(null);
   const fileRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
@@ -57,28 +56,29 @@ export default function DocumentsPage() {
 
   const fetchDocs = async () => {
     if (!token) return;
-    setLoading(true);
-    setError('');
+    setLoading(true); setError('');
     try {
       const url = activeCategory === 'all'
         ? `${API}/api/v1/documents`
         : `${API}/api/v1/documents?category=${activeCategory}`;
-      const res = await fetch(url, {
-        headers: { Authorization: `Bearer ${token}` },
-      });
+      const res = await fetch(url, { headers: { Authorization: `Bearer ${token}` } });
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || 'Failed to load');
       setDocs(data.data || []);
-    } catch (err: any) {
-      setError(err.message);
-    } finally {
-      setLoading(false);
-    }
+    } catch (err: any) { setError(err.message); }
+    finally { setLoading(false); }
   };
 
+  useEffect(() => { if (user && token) fetchDocs(); }, [user, token, activeCategory]);
+
+  // Filter by search
   useEffect(() => {
-    if (user && token) fetchDocs();
-  }, [user, token, activeCategory]);
+    if (!search) { setFiltered(docs); return; }
+    setFiltered(docs.filter(d =>
+      d.name.toLowerCase().includes(search.toLowerCase()) ||
+      d.category.toLowerCase().includes(search.toLowerCase())
+    ));
+  }, [search, docs]);
 
   const handleUpload = async () => {
     if (!selectedFile || !token) return;
@@ -95,24 +95,39 @@ export default function DocumentsPage() {
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || 'Upload failed');
       setSuccess(`"${selectedFile.name}" uploaded successfully`);
-      setSelectedFile(null);
-      setShowUpload(false);
+      setSelectedFile(null); setShowUpload(false);
       await fetchDocs();
-    } catch (err: any) {
-      setError(err.message);
-    } finally {
-      setUploading(false);
-    }
+    } catch (err: any) { setError(err.message); }
+    finally { setUploading(false); }
+  };
+
+  const handleDownload = async (doc: Doc) => {
+    if (!token) return;
+    setDownloading(doc.id);
+    try {
+      const res = await fetch(`${API}/api/v1/documents/${doc.id}`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      const data = await res.json();
+      if (data.data?.download_url) {
+        window.open(data.data.download_url, '_blank');
+      } else {
+        // Fallback: create a placeholder download notification
+        setSuccess(`Download requested for "${doc.name}" — Box integration will provide the link`);
+      }
+    } catch { setError('Download failed'); }
+    finally { setDownloading(null); }
   };
 
   const handleDrop = (e: React.DragEvent) => {
-    e.preventDefault();
-    setDragOver(false);
+    e.preventDefault(); setDragOver(false);
     const file = e.dataTransfer.files[0];
     if (file) { setSelectedFile(file); setShowUpload(true); }
   };
 
   if (isLoading || !user) return null;
+
+  const displayDocs = search ? filtered : docs;
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -138,13 +153,10 @@ export default function DocumentsPage() {
           <div className="bg-white rounded-xl border border-gray-200 p-6 mb-6">
             <div className="flex items-center justify-between mb-4">
               <h2 className="text-base font-semibold text-gray-900">Upload Document</h2>
-              <button onClick={() => { setShowUpload(false); setSelectedFile(null); setError(''); }}
-                className="text-gray-400 hover:text-gray-600 text-lg">✕</button>
+              <button onClick={() => { setShowUpload(false); setSelectedFile(null); }} className="text-gray-400 hover:text-gray-600 text-lg">✕</button>
             </div>
-            <div
-              onDragOver={e => { e.preventDefault(); setDragOver(true); }}
-              onDragLeave={() => setDragOver(false)}
-              onDrop={handleDrop}
+            <div onDragOver={e => { e.preventDefault(); setDragOver(true); }}
+              onDragLeave={() => setDragOver(false)} onDrop={handleDrop}
               onClick={() => fileRef.current?.click()}
               className={`border-2 border-dashed rounded-xl p-8 text-center cursor-pointer transition-colors mb-4 ${
                 dragOver ? 'border-black bg-gray-50' : 'border-gray-300 hover:border-gray-400'
@@ -182,6 +194,16 @@ export default function DocumentsPage() {
           </div>
         )}
 
+        {/* Search + filters */}
+        <div className="flex gap-3 mb-4">
+          <div className="relative flex-1 max-w-xs">
+            <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-sm">🔍</span>
+            <input type="text" value={search} onChange={e => setSearch(e.target.value)}
+              placeholder="Search documents..."
+              className="w-full pl-9 pr-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-black" />
+          </div>
+        </div>
+
         <div className="flex gap-2 flex-wrap mb-6">
           {CATEGORIES.map(cat => (
             <button key={cat} onClick={() => setActiveCategory(cat)}
@@ -204,17 +226,18 @@ export default function DocumentsPage() {
                 <th className="text-left px-5 py-3 text-xs font-medium text-gray-500 uppercase tracking-wide">Size</th>
                 <th className="text-left px-5 py-3 text-xs font-medium text-gray-500 uppercase tracking-wide">Uploaded by</th>
                 <th className="text-left px-5 py-3 text-xs font-medium text-gray-500 uppercase tracking-wide">Date</th>
+                <th className="px-5 py-3"></th>
               </tr>
             </thead>
             <tbody>
-              {loading && <tr><td colSpan={5} className="px-5 py-8 text-center text-sm text-gray-400">Loading...</td></tr>}
-              {!loading && docs.length === 0 && (
-                <tr><td colSpan={5} className="px-5 py-8 text-center text-sm text-gray-400">
-                  No documents yet. Upload your first document above.
+              {loading && <tr><td colSpan={6} className="px-5 py-8 text-center text-sm text-gray-400">Loading...</td></tr>}
+              {!loading && displayDocs.length === 0 && (
+                <tr><td colSpan={6} className="px-5 py-8 text-center text-sm text-gray-400">
+                  {search ? `No documents matching "${search}"` : 'No documents yet. Upload your first document above.'}
                 </td></tr>
               )}
-              {docs.map((doc, i) => (
-                <tr key={doc.id} className={`hover:bg-gray-50 ${i < docs.length - 1 ? 'border-b border-gray-100' : ''}`}>
+              {displayDocs.map((doc, i) => (
+                <tr key={doc.id} className={`hover:bg-gray-50 ${i < displayDocs.length - 1 ? 'border-b border-gray-100' : ''}`}>
                   <td className="px-5 py-3.5">
                     <div className="flex items-center gap-2">
                       <span className="text-lg">
@@ -233,6 +256,13 @@ export default function DocumentsPage() {
                   <td className="px-5 py-3.5 text-sm text-gray-500">{formatBytes(doc.size_bytes)}</td>
                   <td className="px-5 py-3.5 text-sm text-gray-500">{doc.uploaded_by_name}</td>
                   <td className="px-5 py-3.5 text-sm text-gray-500">{new Date(doc.created_at).toLocaleDateString()}</td>
+                  <td className="px-5 py-3.5 text-right">
+                    <button onClick={() => handleDownload(doc)}
+                      disabled={downloading === doc.id}
+                      className="text-xs text-gray-500 hover:text-black border border-gray-200 hover:border-gray-400 rounded px-2 py-1 transition-colors disabled:opacity-50">
+                      {downloading === doc.id ? '...' : '⬇ Download'}
+                    </button>
+                  </td>
                 </tr>
               ))}
             </tbody>
