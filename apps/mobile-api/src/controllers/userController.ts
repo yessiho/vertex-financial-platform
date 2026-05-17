@@ -84,6 +84,47 @@ export class UserController {
         after: JSON.stringify({ email, role }),
       });
 
+      // Send welcome email via SendGrid if configured
+      if (process.env.SENDGRID_API_KEY && process.env.EMAIL_FROM) {
+        try {
+          const sgMail = require('@sendgrid/mail');
+          sgMail.setApiKey(process.env.SENDGRID_API_KEY);
+          await sgMail.send({
+            to: email,
+            from: { email: process.env.EMAIL_FROM, name: 'Vertex Financial' },
+            subject: 'Welcome to Vertex Financial Portal',
+            html: `
+              <div style="font-family:sans-serif;max-width:600px;margin:0 auto;">
+                <div style="background:#000;padding:20px 24px;border-radius:8px 8px 0 0;">
+                  <h1 style="color:#fff;font-size:20px;margin:0;">Welcome to Vertex Financial</h1>
+                </div>
+                <div style="padding:24px;border:1px solid #e5e7eb;border-top:none;border-radius:0 0 8px 8px;">
+                  <p>Hi ${first_name},</p>
+                  <p>Your account has been created. Here are your login credentials:</p>
+                  <div style="background:#f9fafb;border:1px solid #e5e7eb;border-radius:8px;padding:16px;margin:16px 0;">
+                    <p style="margin:0 0 8px;"><strong>Email:</strong> ${email}</p>
+                    <p style="margin:0 0 8px;"><strong>Temporary Password:</strong> <code style="background:#e5e7eb;padding:2px 6px;border-radius:4px;">${tempPassword}</code></p>
+                    <p style="margin:0;"><strong>Role:</strong> ${role}</p>
+                  </div>
+                  <p>Please log in and change your password immediately.</p>
+                  <a href="${process.env.WEB_PORTAL_URL || 'https://web-portal-nu-plum.vercel.app'}/login"
+                    style="display:inline-block;background:#000;color:#fff;padding:12px 24px;border-radius:8px;text-decoration:none;font-weight:500;">
+                    Log in to Portal
+                  </a>
+                  <p style="color:#6b7280;font-size:12px;margin-top:24px;">
+                    This is an automated message from Vertex Financial Portal.
+                  </p>
+                </div>
+              </div>
+            `,
+          });
+          console.log(`Welcome email sent to ${email}`);
+        } catch (emailErr) {
+          console.error('Failed to send welcome email:', emailErr);
+          // Don't fail the invite if email fails
+        }
+      }
+
       res.status(201).json({ data: user, temp_password: tempPassword });
     } catch (err) { next(err); }
   };
